@@ -129,13 +129,15 @@ void mainloop(Screen &screen) {
                 textout(screen, screen.width - HELP_WIDTH, 35, "Time: " + std::to_string(counter));
             }
 
-            if (imageNumber != 0 && showImageInformation) {
+            if (imageNumber < refImages.size() && showImageInformation) {
                 std::stringstream ss;
                 ss << "Size: " << ref.rawWidth << "x" << ref.rawHeight;
                 ss << "  Scale: " << std::fixed << std::setprecision(2) << ref.multiplier;
-                ss << "   Number: " << (imageNumber - 1) << " of " << refImages.size();
-                textout(screen, screen.width - ref.filename.size() * fontWidth, screen.height - fontHeight * 2 - 15, ref.filename);
-                textout(screen, screen.width - ss.str().size() * fontWidth, screen.height - fontHeight - 10, ss.str());
+                if (imageNumber != 0)   ss << "   Number: " << imageNumber;
+                else                    ss << "   Number: " << refImages.size();
+                ss << " of " << refImages.size();
+                textout(screen, screen.width - ref.filename.size() * fontWidth - 10, screen.height - fontHeight * 2 - 15, ref.filename);
+                textout(screen, screen.width - ss.str().size() * fontWidth - 10, screen.height - fontHeight - 10, ss.str());
             }
 
         } else if (error == ErrorType::BadImageList) {
@@ -170,6 +172,7 @@ void mainloop(Screen &screen) {
             }
             if (event.type == SDL_KEYDOWN) {
                 switch (event.key.keysym.sym) {
+                    case SDLK_RIGHT:
                     case SDLK_SPACE:
                         if (error != ErrorType::None) break;
                         ref.filename = refImages[imageNumber];
@@ -180,6 +183,16 @@ void mainloop(Screen &screen) {
                         if (imageNumber >= refImages.size()) {
                             imageNumber = 0;
                         }
+                        break;
+                    case SDLK_LEFT:
+                        if (error != ErrorType::None) break;
+                        if (imageNumber > 0)    --imageNumber;
+                        else                    imageNumber = refImages.size() - 1;
+
+                        if (imageNumber == 0)   ref.filename = refImages[refImages.size() - 1];
+                        else                    ref.filename = refImages[imageNumber - 1];
+                        getRef(screen, ref, destRect);
+                        counter = 0;
                         break;
 
                     case SDLK_1:
@@ -256,7 +269,9 @@ ReturnType showHelp(Screen &screen) {
         textout(screen, 10,  60, "    H  Show help (this screen)");
         textout(screen, 10,  85, "    I  Toggle image info");
         textout(screen, 10, 110, "    S  Reshuffle");
-        textout(screen, 10, 135, "SPACE  Next Image");
+        textout(screen, 10, 135, " LEFT  Previous Image");
+        textout(screen, 10, 160, "RIGHT  Next Image");
+        textout(screen, 10, 185, "SPACE  Next Image");
 
         textout(screen, column2,  10, "Timer Length");
         textout(screen, column2,  35, "1  30s");
