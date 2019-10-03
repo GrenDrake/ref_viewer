@@ -18,6 +18,7 @@ struct Screen {
     SDL_Window *window;
     SDL_Renderer *renderer;
     SDL_Texture *font;
+    const char *listfile;
 };
 
 void mainloop(Screen &screen);

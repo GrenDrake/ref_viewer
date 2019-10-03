@@ -5,8 +5,16 @@
 
 #include "sdlref.h"
 
-int main() {
+int main(int argc, char *argv[]) {
     Screen screen;
+    screen.listfile = "list.txt";
+
+    if (argc > 2) {
+        std::cerr << "USAGE: sdlref [list file name]\n";
+        return 1;
+    } else if (argc == 2) {
+        screen.listfile = argv[1];
+    }
 
     if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER) != 0){
         std::cout << "SDL_Init Error: " << SDL_GetError() << std::endl;

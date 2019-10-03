@@ -21,7 +21,7 @@ struct Button {
     int x, y, w, h;
 };
 
-bool getFileList(std::vector<std::string> &dest);
+bool getFileList(std::vector<std::string> &dest, const std::string &filename);
 void shuffleFileList(std::vector<std::string> &dest);
 
 static int timerEventId = -1;
@@ -83,8 +83,12 @@ Uint32 timerCallback(Uint32 interval, void *param) {
 
 void mainloop(Screen &screen) {
     std::vector<std::string> refImages;
-    if (!getFileList(refImages)) {
-        std::cerr << "Failed to load file list.\n";
+    if (!getFileList(refImages, screen.listfile)) {
+        std::cerr << "Failed to load image file list.\n";
+        return;
+    }
+    if (refImages.empty()) {
+        std::cerr << "Image file list is empty.\n";
         return;
     }
 
