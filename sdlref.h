@@ -21,6 +21,12 @@ struct Screen {
     const char *listfile;
 };
 
+enum class ReturnType {
+    Normal,
+    Rescale,
+    Quit
+};
+
 void mainloop(Screen &screen);
 
 #endif

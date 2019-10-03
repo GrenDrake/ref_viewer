@@ -26,6 +26,8 @@ struct Button {
 bool getFileList(std::vector<std::string> &dest, const std::string &filename);
 void shuffleFileList(std::vector<std::string> &dest);
 
+ReturnType showHelp(Screen &screen);
+
 static int timerEventId = -1;
 
 
@@ -97,7 +99,6 @@ void mainloop(Screen &screen) {
     unsigned imageNumber = 0;
     int interval = 30;
     int counter = 0;
-    bool showHelp = true;
 
     RefImage ref{""};
     SDL_Rect destRect;
@@ -118,39 +119,26 @@ void mainloop(Screen &screen) {
                 SDL_RenderFillRect(screen.renderer, &cover);
             }
         } else {
-            if (ref.filename.empty())   textout(screen, 10, 10, "Press SPACE to load image.");
-            else                        textout(screen, 10, 10, "Image not found.");
+            if (ref.filename.empty()) {
+                textout(screen, 10, 10, "Press SPACE to load image.");
+                textout(screen, 10, 35, "Press H or F1 to display help.");
+            } else {
+                textout(screen, 10, 10, "Image not found.");
+            }
         }
 
-        if (showHelp) {
-            textout(screen, screen.width - HELP_WIDTH,  10, "    Q  Quit");
-            textout(screen, screen.width - HELP_WIDTH,  35, "    R  Reset Timer");
-            textout(screen, screen.width - HELP_WIDTH,  60, "    H  Toggle Help");
-            textout(screen, screen.width - HELP_WIDTH,  85, "    S  Reshuffle");
-            textout(screen, screen.width - HELP_WIDTH, 110, "SPACE  Next Image");
-            textout(screen, screen.width - HELP_WIDTH, 160, "    1  30s timer");
-            textout(screen, screen.width - HELP_WIDTH, 185, "    2  60s timer");
-            textout(screen, screen.width - HELP_WIDTH, 210, "    3  2m timer");
-            textout(screen, screen.width - HELP_WIDTH, 235, "    4  5m timer");
-            textout(screen, screen.width - HELP_WIDTH, 260, "    5  30m timer");
-            textout(screen, screen.width - HELP_WIDTH, 285, "    6  60m timer");
-            textout(screen, screen.width - HELP_WIDTH, 310, "    7  2h timer");
-            textout(screen, screen.width - HELP_WIDTH, 335, "    8  5h timer");
-            textout(screen, screen.width - HELP_WIDTH, 360, "    9  No timer");
+        if (interval > 0) {
+            textout(screen, screen.width - HELP_WIDTH, 10, "Interval: " + std::to_string(interval) + "s");
+            textout(screen, screen.width - HELP_WIDTH, 35, "Time: " + std::to_string(counter));
+        }
 
-            if (interval > 0) {
-                textout(screen, screen.width - HELP_WIDTH, 400, "Interval: " + std::to_string(interval) + "s");
-                textout(screen, screen.width - HELP_WIDTH, 425, "Time: " + std::to_string(counter));
-            }
-
-            if (imageNumber != 0) {
-                std::stringstream ss;
-                ss << "Size: " << ref.rawWidth << "x" << ref.rawHeight;
-                ss << "  Scale: " << std::fixed << std::setprecision(2) << ref.multiplier;
-                ss << "   Number: " << (imageNumber - 1) << " of " << refImages.size();
-                textout(screen, screen.width - ref.filename.size() * fontWidth, screen.height - fontHeight * 2, ref.filename);
-                textout(screen, screen.width - ss.str().size() * fontWidth, screen.height - fontHeight, ss.str());
-            }
+        if (imageNumber != 0) {
+            std::stringstream ss;
+            ss << "Size: " << ref.rawWidth << "x" << ref.rawHeight;
+            ss << "  Scale: " << std::fixed << std::setprecision(2) << ref.multiplier;
+            ss << "   Number: " << (imageNumber - 1) << " of " << refImages.size();
+            textout(screen, screen.width - ref.filename.size() * fontWidth, screen.height - fontHeight * 2 - 15, ref.filename);
+            textout(screen, screen.width - ss.str().size() * fontWidth, screen.height - fontHeight - 10, ss.str());
         }
 
         SDL_RenderPresent(screen.renderer);
@@ -219,14 +207,72 @@ void mainloop(Screen &screen) {
                         ref.image = nullptr;
                         counter = 0;
                         break;
-                    case SDLK_h:
-                        showHelp = !showHelp;
-                        break;
+                    case SDLK_F1:
+                    case SDLK_h: {
+                        ReturnType rt = showHelp(screen);
+                        if (rt == ReturnType::Quit) {
+                            return;
+                        } else if (rt == ReturnType::Rescale) {
+                            scaleImage(screen, ref, destRect);
+                        }
+                        break; }
                     case SDLK_r:
                         counter = 0;
                         break;
                     case SDLK_q:
                         return;
+                }
+            }
+        }
+    }
+}
+
+
+ReturnType showHelp(Screen &screen) {
+    int column2 = screen.width / 2;
+    bool rescale = false;
+    while (1) {
+        SDL_SetRenderDrawColor(screen.renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+        SDL_RenderClear(screen.renderer);
+
+        textout(screen, 10,  10, "    Q  Quit");
+        textout(screen, 10,  35, "    R  Reset Timer");
+        textout(screen, 10,  60, "    H  Show help (this screen)");
+        textout(screen, 10,  85, "    S  Reshuffle");
+        textout(screen, 10, 110, "SPACE  Next Image");
+
+        textout(screen, column2,  10, "Timer Length");
+        textout(screen, column2,  35, "1  30s");
+        textout(screen, column2,  60, "2  60s");
+        textout(screen, column2,  85, "3  2m");
+        textout(screen, column2, 110, "4  5m");
+        textout(screen, column2, 135, "5  30m");
+        textout(screen, column2, 160, "6  60m");
+        textout(screen, column2, 185, "7  2h");
+        textout(screen, column2, 210, "8  5h");
+        textout(screen, column2, 235, "9  Off");
+
+        textout(screen, 10, screen.height - 25, "Press a key to continue");
+        SDL_RenderPresent(screen.renderer);
+
+
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_USEREVENT) {
+                // do nothing
+            }
+            if (event.type == SDL_QUIT) return ReturnType::Quit;
+            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED) {
+                screen.width = event.window.data1;
+                screen.height = event.window.data2;
+                column2 = screen.width / 2;
+                rescale = true;
+            }
+            if (event.type == SDL_KEYDOWN) {
+                if (event.key.keysym.sym == SDLK_q) {
+                    return ReturnType::Quit;
+                } else {
+                    return rescale ? ReturnType::Rescale : ReturnType::Normal;
                 }
             }
         }
