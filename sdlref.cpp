@@ -17,12 +17,6 @@ struct RefImage {
     double multiplier;
 };
 
-struct Button {
-    int image;
-    std::string text;
-    int x, y, w, h;
-};
-
 bool getFileList(std::vector<std::string> &dest, const std::string &filename);
 void shuffleFileList(std::vector<std::string> &dest);
 
