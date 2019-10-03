@@ -99,6 +99,7 @@ void mainloop(Screen &screen) {
     unsigned imageNumber = 0;
     int interval = 30;
     int counter = 0;
+    bool showImageInformation = false;
 
     RefImage ref{""};
     SDL_Rect destRect;
@@ -132,7 +133,7 @@ void mainloop(Screen &screen) {
             textout(screen, screen.width - HELP_WIDTH, 35, "Time: " + std::to_string(counter));
         }
 
-        if (imageNumber != 0) {
+        if (imageNumber != 0 && showImageInformation) {
             std::stringstream ss;
             ss << "Size: " << ref.rawWidth << "x" << ref.rawHeight;
             ss << "  Scale: " << std::fixed << std::setprecision(2) << ref.multiplier;
@@ -207,6 +208,9 @@ void mainloop(Screen &screen) {
                         ref.image = nullptr;
                         counter = 0;
                         break;
+                    case SDLK_i:
+                        showImageInformation = !showImageInformation;
+                        break;
                     case SDLK_F1:
                     case SDLK_h: {
                         ReturnType rt = showHelp(screen);
@@ -238,8 +242,9 @@ ReturnType showHelp(Screen &screen) {
         textout(screen, 10,  10, "    Q  Quit");
         textout(screen, 10,  35, "    R  Reset Timer");
         textout(screen, 10,  60, "    H  Show help (this screen)");
-        textout(screen, 10,  85, "    S  Reshuffle");
-        textout(screen, 10, 110, "SPACE  Next Image");
+        textout(screen, 10,  85, "    I  Toggle image info");
+        textout(screen, 10, 110, "    S  Reshuffle");
+        textout(screen, 10, 135, "SPACE  Next Image");
 
         textout(screen, column2,  10, "Timer Length");
         textout(screen, column2,  35, "1  30s");
