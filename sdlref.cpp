@@ -31,6 +31,8 @@ static int timerEventId = -1;
 
 
 void scaleImage(const Screen &screen, RefImage &ref, SDL_Rect &destRect) {
+    destRect.x = 0;
+    destRect.y = 0;
     destRect.w = ref.rawWidth;
     destRect.h = ref.rawHeight;
 
@@ -38,11 +40,14 @@ void scaleImage(const Screen &screen, RefImage &ref, SDL_Rect &destRect) {
         ref.multiplier = static_cast<double>(screen.height) / static_cast<double>(destRect.h);
         destRect.h *= ref.multiplier;
         destRect.w *= ref.multiplier;
+        destRect.x = (screen.width - destRect.w) / 2;
     }
     if (destRect.w > screen.width) {
         ref.multiplier = static_cast<double>(screen.width) / static_cast<double>(destRect.w);
         destRect.h *= ref.multiplier;
         destRect.w *= ref.multiplier;
+        destRect.x = 0;
+        destRect.y = (screen.height - destRect.h) / 2;
     }
 
 }
@@ -107,7 +112,6 @@ void mainloop(Screen &screen) {
         SDL_RenderClear(screen.renderer);
 
         if (error == ErrorType::None) {
-            destRect.x = destRect.y = 0;
             if (ref.image) {
                 SDL_RenderCopy(screen.renderer, ref.image, nullptr, &destRect);
                 if (interval > 0 && counter >= interval) {
