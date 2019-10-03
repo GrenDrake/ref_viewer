@@ -1,4 +1,3 @@
-#include <iostream>
 #include <iomanip>
 #include <sstream>
 #include <string>
@@ -9,6 +8,12 @@
 #include <SDL2/SDL_ttf.h>
 
 #include "sdlref.h"
+
+enum class ErrorType {
+    None,
+    BadImageList,
+    EmptyImageList,
+};
 
 struct RefImage {
     std::string filename;
@@ -80,15 +85,11 @@ Uint32 timerCallback(Uint32 interval, void *param) {
 
 
 void mainloop(Screen &screen) {
+    ErrorType error = ErrorType::None;
+
     std::vector<std::string> refImages;
-    if (!getFileList(refImages, screen.listfile)) {
-        std::cerr << "Failed to load image file list.\n";
-        return;
-    }
-    if (refImages.empty()) {
-        std::cerr << "Image file list is empty.\n";
-        return;
-    }
+    if (!getFileList(refImages, screen.listfile))   error = ErrorType::BadImageList;
+    else if (refImages.empty())                     error = ErrorType::EmptyImageList;
 
     unsigned imageNumber = 0;
     int interval = 30;
@@ -105,35 +106,51 @@ void mainloop(Screen &screen) {
         SDL_SetRenderDrawColor(screen.renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(screen.renderer);
 
-        destRect.x = destRect.y = 0;
-        if (ref.image) {
-            SDL_RenderCopy(screen.renderer, ref.image, nullptr, &destRect);
-            if (interval > 0 && counter >= interval) {
-                SDL_Rect cover = { 0, 0, destRect.w, destRect.h };
-                SDL_SetRenderDrawColor(screen.renderer, 0, 0, 0, 127);
-                SDL_RenderFillRect(screen.renderer, &cover);
-            }
-        } else {
-            if (ref.filename.empty()) {
-                textout(screen, 10, 10, "Press SPACE to load image.");
-                textout(screen, 10, 35, "Press H or F1 to display help.");
+        if (error == ErrorType::None) {
+            destRect.x = destRect.y = 0;
+            if (ref.image) {
+                SDL_RenderCopy(screen.renderer, ref.image, nullptr, &destRect);
+                if (interval > 0 && counter >= interval) {
+                    SDL_Rect cover = { 0, 0, destRect.w, destRect.h };
+                    SDL_SetRenderDrawColor(screen.renderer, 0, 0, 0, 127);
+                    SDL_RenderFillRect(screen.renderer, &cover);
+                }
             } else {
-                textout(screen, 10, 10, "Image not found.");
+                if (ref.filename.empty()) {
+                    textout(screen, 10, 10, "Press SPACE to load image.");
+                    textout(screen, 10, 35, "Press H or F1 to display help.");
+                } else {
+                    textout(screen, 10, 10, "Image not found.");
+                }
             }
-        }
 
-        if (interval > 0) {
-            textout(screen, screen.width - HELP_WIDTH, 10, "Interval: " + std::to_string(interval) + "s");
-            textout(screen, screen.width - HELP_WIDTH, 35, "Time: " + std::to_string(counter));
-        }
+            if (interval > 0) {
+                textout(screen, screen.width - HELP_WIDTH, 10, "Interval: " + std::to_string(interval) + "s");
+                textout(screen, screen.width - HELP_WIDTH, 35, "Time: " + std::to_string(counter));
+            }
 
-        if (imageNumber != 0 && showImageInformation) {
+            if (imageNumber != 0 && showImageInformation) {
+                std::stringstream ss;
+                ss << "Size: " << ref.rawWidth << "x" << ref.rawHeight;
+                ss << "  Scale: " << std::fixed << std::setprecision(2) << ref.multiplier;
+                ss << "   Number: " << (imageNumber - 1) << " of " << refImages.size();
+                textout(screen, screen.width - ref.filename.size() * fontWidth, screen.height - fontHeight * 2 - 15, ref.filename);
+                textout(screen, screen.width - ss.str().size() * fontWidth, screen.height - fontHeight - 10, ss.str());
+            }
+
+        } else if (error == ErrorType::BadImageList) {
             std::stringstream ss;
-            ss << "Size: " << ref.rawWidth << "x" << ref.rawHeight;
-            ss << "  Scale: " << std::fixed << std::setprecision(2) << ref.multiplier;
-            ss << "   Number: " << (imageNumber - 1) << " of " << refImages.size();
-            textout(screen, screen.width - ref.filename.size() * fontWidth, screen.height - fontHeight * 2 - 15, ref.filename);
-            textout(screen, screen.width - ss.str().size() * fontWidth, screen.height - fontHeight - 10, ss.str());
+            ss << "Failed to load image file list \"" << screen.listfile << "\".";
+            textout(screen, 10, 10, ss.str());
+            textout(screen, 10, 35, "Press Q or ESCAPE to quit.");
+        } else if (error == ErrorType::EmptyImageList) {
+            textout(screen, 10, 10, "Image file list is empty.");
+            textout(screen, 10, 35, "Press Q or ESCAPE to quit.");
+        } else {
+            std::stringstream ss;
+            ss << "Unhandled error type " << static_cast<int>(error) << '.';
+            textout(screen, 10, 10, ss.str());
+            textout(screen, 10, 35, "Press Q or ESCAPE to quit.");
         }
 
         SDL_RenderPresent(screen.renderer);
@@ -154,6 +171,7 @@ void mainloop(Screen &screen) {
             if (event.type == SDL_KEYDOWN) {
                 switch (event.key.keysym.sym) {
                     case SDLK_SPACE:
+                        if (error != ErrorType::None) break;
                         ref.filename = refImages[imageNumber];
                         getRef(screen, ref, destRect);
                         counter = 0;
