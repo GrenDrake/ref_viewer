@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -13,6 +14,7 @@ struct RefImage {
     std::string filename;
     SDL_Texture *image;
     int rawWidth, rawHeight;
+    double multiplier;
 };
 
 struct Button {
@@ -31,15 +33,15 @@ void scaleImage(const Screen &screen, RefImage &ref, SDL_Rect &destRect) {
     destRect.w = ref.rawWidth;
     destRect.h = ref.rawHeight;
 
-    if (destRect.h > screen.height) {
-        double multiplier = static_cast<double>(destRect.h) / static_cast<double>(screen.height);
-        destRect.h /= multiplier;
-        destRect.w /= multiplier;
+    if (destRect.h != screen.height) {
+        ref.multiplier = static_cast<double>(screen.height) / static_cast<double>(destRect.h);
+        destRect.h *= ref.multiplier;
+        destRect.w *= ref.multiplier;
     }
     if (destRect.w > screen.width) {
-        double multiplier = static_cast<double>(destRect.w) / static_cast<double>(screen.width);
-        destRect.h /= multiplier;
-        destRect.w /= multiplier;
+        ref.multiplier = static_cast<double>(screen.width) / static_cast<double>(destRect.w);
+        destRect.h *= ref.multiplier;
+        destRect.w *= ref.multiplier;
     }
 
 }
@@ -144,6 +146,7 @@ void mainloop(Screen &screen) {
             if (imageNumber != 0) {
                 std::stringstream ss;
                 ss << "Size: " << ref.rawWidth << "x" << ref.rawHeight;
+                ss << "  Scale: " << std::fixed << std::setprecision(2) << ref.multiplier;
                 ss << "   Number: " << (imageNumber - 1) << " of " << refImages.size();
                 textout(screen, screen.width - ref.filename.size() * fontWidth, screen.height - fontHeight * 2, ref.filename);
                 textout(screen, screen.width - ss.str().size() * fontWidth, screen.height - fontHeight, ss.str());
