@@ -27,6 +27,22 @@ void shuffleFileList(std::vector<std::string> &dest);
 static int timerEventId = -1;
 
 
+void scaleImage(const Screen &screen, RefImage &ref, SDL_Rect &destRect) {
+    destRect.w = ref.rawWidth;
+    destRect.h = ref.rawHeight;
+
+    if (destRect.h > screen.height) {
+        double multiplier = static_cast<double>(destRect.h) / static_cast<double>(screen.height);
+        destRect.h /= multiplier;
+        destRect.w /= multiplier;
+    }
+    if (destRect.w > screen.width) {
+        double multiplier = static_cast<double>(destRect.w) / static_cast<double>(screen.width);
+        destRect.h /= multiplier;
+        destRect.w /= multiplier;
+    }
+
+}
 
 void getRef(Screen &screen, RefImage &ref, SDL_Rect &destRect) {
     destRect.x = destRect.y = 0;
@@ -42,19 +58,7 @@ void getRef(Screen &screen, RefImage &ref, SDL_Rect &destRect) {
     if (!ref.image) return;
 
     SDL_QueryTexture(ref.image, nullptr, nullptr, &ref.rawWidth, &ref.rawHeight);
-    destRect.w = ref.rawWidth;
-    destRect.h = ref.rawHeight;
-
-    if (destRect.h > screenHeight) {
-        double multiplier = static_cast<double>(destRect.h) / static_cast<double>(screenHeight);
-        destRect.h /= multiplier;
-        destRect.w /= multiplier;
-    }
-    if (destRect.w > screenWidth) {
-        double multiplier = static_cast<double>(destRect.w) / static_cast<double>(screenWidth);
-        destRect.h /= multiplier;
-        destRect.w /= multiplier;
-    }
+    scaleImage(screen, ref, destRect);
 }
 
 void textout(Screen &screen, int x, int y, const std::string &text) {
@@ -113,32 +117,32 @@ void mainloop(Screen &screen) {
         }
 
         if (showHelp) {
-            textout(screen, screenWidth - HELP_WIDTH,  10, "    Q  Quit");
-            textout(screen, screenWidth - HELP_WIDTH,  35, "    R  Reset Timer");
-            textout(screen, screenWidth - HELP_WIDTH,  60, "    H  Toggle Help");
-            textout(screen, screenWidth - HELP_WIDTH,  85, "    S  Reshuffle");
-            textout(screen, screenWidth - HELP_WIDTH, 110, "SPACE  Next Image");
-            textout(screen, screenWidth - HELP_WIDTH, 160, "    1  30s timer");
-            textout(screen, screenWidth - HELP_WIDTH, 185, "    2  60s timer");
-            textout(screen, screenWidth - HELP_WIDTH, 210, "    3  2m timer");
-            textout(screen, screenWidth - HELP_WIDTH, 235, "    4  5m timer");
-            textout(screen, screenWidth - HELP_WIDTH, 260, "    5  30m timer");
-            textout(screen, screenWidth - HELP_WIDTH, 285, "    6  60m timer");
-            textout(screen, screenWidth - HELP_WIDTH, 310, "    7  2h timer");
-            textout(screen, screenWidth - HELP_WIDTH, 335, "    8  5h timer");
-            textout(screen, screenWidth - HELP_WIDTH, 360, "    9  No timer");
+            textout(screen, screen.width - HELP_WIDTH,  10, "    Q  Quit");
+            textout(screen, screen.width - HELP_WIDTH,  35, "    R  Reset Timer");
+            textout(screen, screen.width - HELP_WIDTH,  60, "    H  Toggle Help");
+            textout(screen, screen.width - HELP_WIDTH,  85, "    S  Reshuffle");
+            textout(screen, screen.width - HELP_WIDTH, 110, "SPACE  Next Image");
+            textout(screen, screen.width - HELP_WIDTH, 160, "    1  30s timer");
+            textout(screen, screen.width - HELP_WIDTH, 185, "    2  60s timer");
+            textout(screen, screen.width - HELP_WIDTH, 210, "    3  2m timer");
+            textout(screen, screen.width - HELP_WIDTH, 235, "    4  5m timer");
+            textout(screen, screen.width - HELP_WIDTH, 260, "    5  30m timer");
+            textout(screen, screen.width - HELP_WIDTH, 285, "    6  60m timer");
+            textout(screen, screen.width - HELP_WIDTH, 310, "    7  2h timer");
+            textout(screen, screen.width - HELP_WIDTH, 335, "    8  5h timer");
+            textout(screen, screen.width - HELP_WIDTH, 360, "    9  No timer");
 
             if (interval > 0) {
-                textout(screen, screenWidth - HELP_WIDTH, 400, "Interval: " + std::to_string(interval) + "s");
-                textout(screen, screenWidth - HELP_WIDTH, 425, "Time: " + std::to_string(counter));
+                textout(screen, screen.width - HELP_WIDTH, 400, "Interval: " + std::to_string(interval) + "s");
+                textout(screen, screen.width - HELP_WIDTH, 425, "Time: " + std::to_string(counter));
             }
 
             if (imageNumber != 0) {
                 std::stringstream ss;
                 ss << "Size: " << ref.rawWidth << "x" << ref.rawHeight;
                 ss << "   Number: " << (imageNumber - 1) << " of " << refImages.size();
-                textout(screen, screenWidth - ref.filename.size() * fontWidth, screenHeight - fontHeight * 2, ref.filename);
-                textout(screen, screenWidth - ss.str().size() * fontWidth, screenHeight - fontHeight, ss.str());
+                textout(screen, screen.width - ref.filename.size() * fontWidth, screen.height - fontHeight * 2, ref.filename);
+                textout(screen, screen.width - ss.str().size() * fontWidth, screen.height - fontHeight, ss.str());
             }
         }
 
@@ -152,6 +156,11 @@ void mainloop(Screen &screen) {
                 if (interval > 0 && ref.image && counter < interval) ++counter;
             }
             if (event.type == SDL_QUIT) return;
+            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED) {
+                screen.width = event.window.data1;
+                screen.height = event.window.data2;
+                scaleImage(screen, ref, destRect);
+            }
             if (event.type == SDL_KEYDOWN) {
                 switch (event.key.keysym.sym) {
                     case SDLK_SPACE:

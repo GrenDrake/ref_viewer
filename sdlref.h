@@ -9,14 +9,12 @@ const int SECONDS_PER_MINUTE = 60;
 const int SECONDS_PER_HOUR = 3600;
 
 const int HELP_WIDTH = 300;
-const int screenWidth = 1920;
-const int screenHeight = 1080;
-const bool doFullscreen = false;
 
 const int fontWidth = 15;
 const int fontHeight = 20;
 
 struct Screen {
+    int width, height;
     SDL_Window *window;
     SDL_Renderer *renderer;
     SDL_Texture *font;
