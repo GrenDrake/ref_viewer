@@ -128,9 +128,8 @@ void mainloop(Screen &screen) {
             if (ref.image) {
                 SDL_RenderCopy(screen.renderer, ref.image, nullptr, &destRect);
                 if (interval > 0 && counter >= interval) {
-                    SDL_Rect cover = { 0, 0, destRect.w, destRect.h };
                     SDL_SetRenderDrawColor(screen.renderer, 0, 0, 0, 127);
-                    SDL_RenderFillRect(screen.renderer, &cover);
+                    SDL_RenderFillRect(screen.renderer, nullptr);
                 }
             } else {
                 if (ref.filename.empty()) {
