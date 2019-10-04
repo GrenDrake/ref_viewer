@@ -100,6 +100,7 @@ void mainloop(Screen &screen) {
     int interval = 30;
     int counter = 0;
     bool showImageInformation = false;
+    int fullscreenMode = 0;
 
     RefImage ref{""};
     SDL_Rect destRect;
@@ -230,6 +231,11 @@ void mainloop(Screen &screen) {
                         interval = 1;
                         break;
 
+                    case SDLK_f:
+                        if (fullscreenMode) fullscreenMode = 0;
+                        else                fullscreenMode = SDL_WINDOW_FULLSCREEN_DESKTOP;
+                        SDL_SetWindowFullscreen(screen.window, fullscreenMode);
+                        break;
                     case SDLK_s:
                         shuffleFileList(refImages);
                         imageNumber = 0;
