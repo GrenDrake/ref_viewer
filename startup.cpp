@@ -24,9 +24,10 @@ int main(int argc, char *argv[]) {
     screen.width = 1024;
     screen.height = 720;
     screen.window = SDL_CreateWindow("SDL Reference",
-                                       SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                                       SDL_WINDOWPOS_CENTERED,
+                                       SDL_WINDOWPOS_CENTERED,
                                        screen.width, screen.height,
-                                       SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED);
+                                       SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     if (screen.window == nullptr){
         std::cout << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
         SDL_Quit();
