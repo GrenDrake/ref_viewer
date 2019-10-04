@@ -88,6 +88,18 @@ Uint32 timerCallback(Uint32 interval, void *param) {
     return MS_PER_SECOND;
 }
 
+std::string intervalToString(int interval) {
+    if (interval == 0) return "0 s";
+    std::stringstream ss;
+    int hours = 0, minutes = 0;
+    while (interval >= SECONDS_PER_HOUR)     { interval -= SECONDS_PER_HOUR;   ++hours;   }
+    if (hours > 0)      ss << hours << " h ";
+    while (interval >= SECONDS_PER_MINUTE)   { interval -= SECONDS_PER_MINUTE; ++minutes; }
+    if (minutes > 0)    ss << minutes << " m ";
+    if (interval > 0)   ss << interval << " s";
+    return ss.str();
+}
+
 
 void mainloop(Screen &screen) {
     ErrorType error = ErrorType::None;
@@ -130,8 +142,8 @@ void mainloop(Screen &screen) {
             }
 
             if (interval > 0) {
-                textout(screen, screen.width - HELP_WIDTH, 10, "Interval: " + std::to_string(interval) + "s");
-                textout(screen, screen.width - HELP_WIDTH, 35, "Time: " + std::to_string(counter));
+                textout(screen, screen.width - HELP_WIDTH, 10, "Interval: " + intervalToString(interval));
+                textout(screen, screen.width - HELP_WIDTH, 35, "Time: " + intervalToString(counter));
             }
 
             if (imageNumber < refImages.size() && showImageInformation) {
