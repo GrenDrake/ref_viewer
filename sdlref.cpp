@@ -284,25 +284,28 @@ ReturnType showHelp(Screen &screen) {
         SDL_SetRenderDrawColor(screen.renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(screen.renderer);
 
-        textout(screen, 10,  10, "    Q  Quit");
-        textout(screen, 10,  35, "    R  Reset Timer");
-        textout(screen, 10,  60, "    H  Show help (this screen)");
-        textout(screen, 10,  85, "    I  Toggle image info");
-        textout(screen, 10, 110, "    S  Reshuffle");
-        textout(screen, 10, 135, " LEFT  Previous Image");
-        textout(screen, 10, 160, "RIGHT  Next Image");
-        textout(screen, 10, 185, "SPACE  Next Image");
+        int yPos = 10;
+                    textout(screen, 10, yPos, "    Q  Quit");
+        yPos += 25; textout(screen, 10, yPos, "    R  Reset Timer");
+        yPos += 25; textout(screen, 10, yPos, "    H  Show help (this screen)");
+        yPos += 25; textout(screen, 10, yPos, "    I  Toggle image info");
+        yPos += 25; textout(screen, 10, yPos, "    S  Reshuffle");
+        yPos += 25; textout(screen, 10, yPos, "    F  Toggle Fullscreen");
+        yPos += 25; textout(screen, 10, yPos, " LEFT  Previous Image");
+        yPos += 25; textout(screen, 10, yPos, "RIGHT  Next Image");
+        yPos += 25; textout(screen, 10, yPos, "SPACE  Next Image");
 
-        textout(screen, column2,  10, "Timer Length");
-        textout(screen, column2,  35, "1  30s");
-        textout(screen, column2,  60, "2  60s");
-        textout(screen, column2,  85, "3  2m");
-        textout(screen, column2, 110, "4  5m");
-        textout(screen, column2, 135, "5  30m");
-        textout(screen, column2, 160, "6  60m");
-        textout(screen, column2, 185, "7  2h");
-        textout(screen, column2, 210, "8  5h");
-        textout(screen, column2, 235, "9  Off");
+        yPos = 10;
+                    textout(screen, column2, yPos, "Timer Length");
+        yPos += 25; textout(screen, column2, yPos, "1  30s");
+        yPos += 25; textout(screen, column2, yPos, "2  60s");
+        yPos += 25; textout(screen, column2, yPos, "3  2m");
+        yPos += 25; textout(screen, column2, yPos, "4  5m");
+        yPos += 25; textout(screen, column2, yPos, "5  30m");
+        yPos += 25; textout(screen, column2, yPos, "6  60m");
+        yPos += 25; textout(screen, column2, yPos, "7  2h");
+        yPos += 25; textout(screen, column2, yPos, "8  5h");
+        yPos += 25; textout(screen, column2, yPos, "9  Off");
 
         textout(screen, 10, screen.height - 25, "Press a key to continue");
         SDL_RenderPresent(screen.renderer);
