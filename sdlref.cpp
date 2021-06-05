@@ -120,7 +120,7 @@ void mainloop(Screen &screen) {
     SDL_AddTimer(MS_PER_SECOND, timerCallback, nullptr);
 
     while (1) {
-        SDL_SetRenderDrawColor(screen.renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+        SDL_SetRenderDrawColor(screen.renderer, 69, 69, 69, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(screen.renderer);
 
         if (error == ErrorType::None) {
