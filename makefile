@@ -5,4 +5,7 @@ OBJS=sdlref.o startup.o filelist.o
 sdlref: $(OBJS)
 	$(CXX) $(OBJS) $(LIBS) -o sdlref
 
+clean:
+	$(RM) *.o
 
+.PHONY: clean
